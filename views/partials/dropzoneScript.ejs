@@ -1,0 +1,13 @@
+<script>
+    Dropzone.options.myDropzone = {
+      paramName: "file",
+      maxFilesize: 5, // MBサイズ
+      acceptedFiles: "",
+      dictDefaultMessage: "ここにファイルをドロップするか、クリックしてファイルを選択してください",
+      init: function() {
+        this.on("success", function(file, response) {
+          location.reload();
+        });
+      }
+    };
+  </script>

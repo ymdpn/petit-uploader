@@ -1,0 +1,12 @@
+<li class="py-4 flex justify-between items-center">
+    <div>
+      <p class="text-lg font-semibold"><%= file.name %></p>
+      <p class="text-sm text-gray-500"><%= new Date(file.date).toLocaleString() %></p>
+    </div>
+    <div class="space-x-2">
+      <a href="/download/<%= file.name %>" class="btn btn-primary">ダウンロード</a>
+      <form action="/delete/<%= file.name %>" method="POST" class="inline">
+        <button type="submit" class="btn btn-primary bg-red-500 hover:bg-red-700">削除</button>
+      </form>
+    </div>
+  </li>
