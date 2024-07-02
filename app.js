@@ -8,6 +8,7 @@ const path = require('path');
 const crypto = require('crypto');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
+const iconv = require('iconv-lite');
 
 const app = express();
 const port = 3000;
@@ -71,7 +72,9 @@ const storage = multer.diskStorage({
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname);
+    // ファイル名をデコード
+    const decodedFilename = iconv.decode(Buffer.from(file.originalname, 'binary'), 'utf8');
+    cb(null, decodedFilename);
   }
 });
 
@@ -144,7 +147,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
   const userId = req.session.userId;
   const date = new Date().toISOString().split('T')[0];
-  const filePath = path.join('files', userId, date, req.file.originalname);
+  const decodedFilename = iconv.decode(Buffer.from(req.file.originalname, 'binary'), 'utf8');
+  const filePath = path.join('files', userId, date, decodedFilename);
 
   const files = loadFiles();
   if (!files[userId]) {
@@ -152,7 +156,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
   }
 
   files[userId].push({
-    name: req.file.originalname,
+    name: decodedFilename,
     path: filePath,
     date: new Date().toISOString()
   });
@@ -177,7 +181,13 @@ app.get('/download/:fileName', (req, res) => {
     return res.status(404).send('ファイルが見つかりません。');
   }
 
-  res.download(path.join(__dirname, file.path), fileName);
+  const filePath = path.join(__dirname, file.path);
+  
+  // Content-Dispositionヘッダーでファイル名をエンコード
+  const encodedFilename = encodeURIComponent(file.name);
+  res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodedFilename}`);
+  
+  res.download(filePath);
 });
 
 // ファイル削除
